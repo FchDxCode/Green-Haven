@@ -1,6 +1,7 @@
 from rest_framework.response import Response
 from rest_framework import viewsets, permissions
 from django.shortcuts import get_object_or_404
+from django.db.models import Q
 from .serializers import *
 from rest_framework.views import APIView
 from itertools import chain
@@ -17,18 +18,25 @@ class BasePublicViewSet(viewsets.ReadOnlyModelViewSet):
         queryset = self.get_queryset()
         lookup = self.kwargs.get(self.lookup_field)
         
-        if lookup.isdigit():
-            obj = get_object_or_404(queryset, id=lookup)
-        else:
-            obj = get_object_or_404(queryset, slug=lookup)
-            
-        return obj
+        # Cek apakah lookup adalah angka (ID) atau string (slug)
+        try:
+            if lookup.isdigit():
+                # Jika angka, cari berdasarkan ID
+                obj = get_object_or_404(queryset, id=lookup)
+            else:
+                # Jika bukan angka, cari berdasarkan slug
+                obj = get_object_or_404(queryset, slug=lookup)
+            return obj
+        except AttributeError:
+            # Jika lookup bukan string (misal: None)
+            return get_object_or_404(queryset, id=lookup)
     
 # destinations    
-class DestinationsViewset(viewsets.ReadOnlyModelViewSet):
+class DestinationsViewset(BasePublicViewSet):
     queryset = Destinations.objects.all()
     serializer_class = DestinationsSerializer
     lookup_field = 'slug'
+    
 
 class ImageDestinationsViewset(viewsets.ReadOnlyModelViewSet):
     queryset = ImageDestinations.objects.all()
@@ -36,7 +44,7 @@ class ImageDestinationsViewset(viewsets.ReadOnlyModelViewSet):
     lookup_field = 'slug'
     
 # flora
-class FloraViewset(viewsets.ReadOnlyModelViewSet):
+class FloraViewset(BasePublicViewSet):
     queryset = Flora.objects.all()
     serializer_class = FloraSerializer
     lookup_field = 'slug'
@@ -105,7 +113,7 @@ class LatestContentView(APIView):
         ))
         
         # Urutkan berdasarkan created_at dan ambil 5 data terbaru
-        latest_content = sorted(all_content, key=attrgetter('created_at'), reverse=True)[:5]
+        latest_content = sorted(all_content, key=attrgetter('created_at'), reverse=True)[:10]
         
         # Serialize data berdasarkan tipe model
         results = []
