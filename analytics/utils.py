@@ -24,11 +24,11 @@ class EventTracker:
             source (str, optional): Source of the event
             metadata (dict, optional): Additional metadata
         """
-        # Get user info if available
+        # Get user info jika ada
         user_id = user.id if user and user.is_authenticated else None
         user_type = 'registered' if user and user.is_authenticated else 'guest'
         
-        # Get journey context from cache
+        # Get journey context dari cache
         journey_key = f"journey:{session_id}" if session_id else None
         previous_event = None
         journey_step = 1
@@ -38,12 +38,12 @@ class EventTracker:
             previous_event = journey_data.get('last_event')
             journey_step = journey_data.get('step', 0) + 1
             
-            # Update journey in cache
+            # Update journey di cache
             cache.set(journey_key, {
                 'last_event': event_name,
                 'step': journey_step,
                 'timestamp': timezone.now().isoformat()
-            }, timeout=3600)  # 1 hour timeout
+            }, timeout=3600)  # 1 jam timeout
         
         # Create event
         event = CustomEvent.objects.create(

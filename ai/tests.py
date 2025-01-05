@@ -11,10 +11,8 @@ from kuliner.models import Kuliner
 
 class ChatbotTest(TestCase):
     def setUp(self):
-        # Clear cache before each test
         cache.clear()
         
-        # Create test destination first
         self.destination = Destinations.objects.create(
             title="Kebun Raya Bogor",
             description="Kebun raya tertua di Indonesia dengan koleksi tanaman yang beragam",
@@ -22,7 +20,6 @@ class ChatbotTest(TestCase):
             slug=slugify("Kebun Raya Bogor")
         )
         
-        # Create test fauna with destination reference
         self.fauna = Fauna.objects.create(
             destinations=self.destination,
             title="Rusa Totol",
@@ -30,7 +27,6 @@ class ChatbotTest(TestCase):
             slug=slugify("Rusa Totol")
         )
         
-        # Create test flora with destination reference
         self.flora = Flora.objects.create(
             destinations=self.destination,
             title="Bunga Bangkai Raksasa",
@@ -38,14 +34,12 @@ class ChatbotTest(TestCase):
             slug=slugify("Bunga Bangkai Raksasa")
         )
 
-        # Create test guide (no destination reference needed)
         self.guide = Guides.objects.create(
             title="Panduan Wisata Bogor",
             description="Tips lengkap untuk wisata di Bogor",
             slug=slugify("Panduan Wisata Bogor")
         )
 
-        # Create test health facility with destination reference
         self.health = Health.objects.create(
             destinations=self.destination,
             title="Klinik Wisata",
@@ -53,7 +47,6 @@ class ChatbotTest(TestCase):
             slug=slugify("Klinik Wisata")
         )
 
-        # Create test culinary with destination reference
         self.kuliner = Kuliner.objects.create(
             destinations=self.destination,
             title="Sate Kuningan",
@@ -70,24 +63,19 @@ class ChatbotTest(TestCase):
             "test_session_1"
         )
         
-        # Check for greeting
         self.assertTrue(response['text'].startswith("Hai! Saya Celya"))
         
-        # Check for content references (more important than intent)
         self.assertTrue(len(response['content_references']) > 0)
         
-        # Check if response mentions Bogor
         self.assertTrue('bogor' in response['text'].lower())
 
     def test_follow_up_question(self):
         """Test conversation continuity"""
-        # First message
         self.gemini_service.get_response(
             "Ceritakan tentang Kebun Raya Bogor",
             "test_session_2"
         )
         
-        # Follow-up question
         response = self.gemini_service.get_response(
             "Dimana lokasinya?",
             "test_session_2"
@@ -101,17 +89,14 @@ class ChatbotTest(TestCase):
     def test_unknown_topic(self):
         """Test response for unknown information"""
         response = self.gemini_service.get_response(
-            "Ceritakan tentang Taman Nasional Kutai",  # Lokasi di luar Bogor
+            "Ceritakan tentang Taman Nasional Kutai", 
             "test_session_3"
         )
         
-        # Check if response is helpful and mentions Bogor
         self.assertTrue('bogor' in response['text'].lower())
         
-        # Check that no content references are returned
         self.assertEqual(len(response['content_references']), 0)
         
-        # Check if response contains any helpful phrases
         helpful_response = any(
             phrase in response['text'].lower() for phrase in [
                 'bisa',
@@ -127,7 +112,7 @@ class ChatbotTest(TestCase):
     def test_content_references(self):
         """Test content references accuracy"""
         response = self.gemini_service.get_response(
-            "Ada fauna apa saja di Kebun Raya Bogor?",  # Specifically asking about Bogor
+            "Ada fauna apa saja di Kebun Raya Bogor?",  
             "test_session_4"
         )
         
@@ -137,13 +122,11 @@ class ChatbotTest(TestCase):
 
     def test_conversation_memory(self):
         """Test conversation context retention"""
-        # First message about destination
         self.gemini_service.get_response(
             "Ceritakan tentang Kebun Raya Bogor",
             "test_session_5"
         )
         
-        # Follow-up about fauna in that destination
         response = self.gemini_service.get_response(
             "Apa saja fauna yang ada di sana?",
             "test_session_5"
@@ -164,5 +147,4 @@ class ChatbotTest(TestCase):
                           for ref in response['content_references']))
 
     def tearDown(self):
-        # Clean up test data
         cache.clear()

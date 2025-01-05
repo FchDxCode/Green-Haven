@@ -24,11 +24,9 @@ class ChatbotViewSet(viewsets.ViewSet):
                     status=status.HTTP_400_BAD_REQUEST
                 )
             
-            # Generate session_id if not provided
             if not session_id:
                 session_id = str(uuid.uuid4())
 
-            # Get response from Gemini
             response_data = self.gemini_service.get_response(user_input, session_id)
 
             return Response({

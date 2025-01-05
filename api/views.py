@@ -18,17 +18,13 @@ class BasePublicViewSet(viewsets.ReadOnlyModelViewSet):
         queryset = self.get_queryset()
         lookup = self.kwargs.get(self.lookup_field)
         
-        # Cek apakah lookup adalah angka (ID) atau string (slug)
         try:
             if lookup.isdigit():
-                # Jika angka, cari berdasarkan ID
                 obj = get_object_or_404(queryset, id=lookup)
             else:
-                # Jika bukan angka, cari berdasarkan slug
                 obj = get_object_or_404(queryset, slug=lookup)
             return obj
         except AttributeError:
-            # Jika lookup bukan string (misal: None)
             return get_object_or_404(queryset, id=lookup)
     
 # destinations    
@@ -112,7 +108,7 @@ class LatestContentView(APIView):
             Guides.objects.all()
         ))
         
-        # Urutkan berdasarkan created_at dan ambil 5 data terbaru
+        # Urutkan berdasarkan created_at dan ambil data terbaru
         latest_content = sorted(all_content, key=attrgetter('created_at'), reverse=True)[:10]
         
         # Serialize data berdasarkan tipe model

@@ -7,7 +7,6 @@ from guides.models import Guides, ImageGuides
 from fauna.models import Fauna, ImageFauna
 
 # destinations
-
 class ImageDestinationsSerializer(serializers.ModelSerializer):
     class Meta:
         model = ImageDestinations

@@ -16,7 +16,6 @@ class GeminiService:
         self.model = genai.GenerativeModel('gemini-pro')
         self.history_length = 5
         
-        # Template untuk respons yang lebih ramah
         self.friendly_responses = {
             'not_found': [
                 "Wah, untuk {} belum ada di database nih. Tapi aku bisa kasih tau tentang {} yang menarik di Bogor! 😊",
@@ -49,11 +48,9 @@ class GeminiService:
             'references': response['content_references']
         })
         
-        # Keep only last N conversations
         if len(history) > self.history_length:
             history = history[-self.history_length:]
             
-        # Set cache with 30 minutes expiry
         cache.set(f'chat_history_{session_id}', history, 1800)
         
     def _format_conversation_history(self, history):
@@ -176,7 +173,6 @@ class GeminiService:
             response = self.model.generate_content(prompt)
             response_text = response.text.strip()
             
-            # Parse response parts
             response_parts = {
                 'text': '',
                 'type': 'unknown',
@@ -199,7 +195,6 @@ class GeminiService:
                 elif current_section == 'response' and line:
                     response_parts['text'] += ' ' + line
 
-            # Validate that mentioned items exist in context
             valid_items = []
             if response_parts['type'] in all_data:
                 available_titles = [item['title'].lower() for item in all_data[response_parts['type']]]
@@ -207,7 +202,6 @@ class GeminiService:
                     if item.lower() in available_titles:
                         valid_items.append(item)
                     
-            # Handle unknown topics or locations outside Bogor
             if "Kutai" in user_input or (not valid_items and response_parts['items']):
                 response_parts['text'] = self._get_friendly_response('not_found', 
                     "informasi tentang lokasi di luar Bogor", 
@@ -216,7 +210,6 @@ class GeminiService:
                 response_parts['items'] = []
                 content_references = []
             else:
-                # Find content references only for valid items
                 content_references = []
                 if response_parts['type'] in all_data and valid_items:
                     for item in all_data[response_parts['type']]:
@@ -230,9 +223,7 @@ class GeminiService:
                                 ref_data['location'] = item['location']
                             content_references.append(ref_data)
 
-            # If no valid items found but we're asking about destinations in Bogor
             if not content_references and 'bogor' in user_input.lower() and 'wisata' in user_input.lower():
-                # Add all Bogor destinations as references
                 for item in all_data.get('destination', []):
                     if 'bogor' in item['title'].lower():
                         content_references.append({
@@ -241,20 +232,17 @@ class GeminiService:
                             'name': item['title']
                         })
 
-            # Check if this is a new session or continuing conversation
             conversation_history = self._get_conversation_history(session_id)
             is_new_conversation = len(conversation_history) == 0
 
-            # Add greeting only for new conversations
             if is_new_conversation and not response_parts['text'].startswith('Hai! Saya Celya'):
                 greeting = self._get_friendly_response('greeting')
                 response_parts['text'] = greeting + response_parts['text']
             elif not is_new_conversation:
-                # Remove default greeting if it exists in continuing conversation
                 if response_parts['text'].startswith('Hai! Saya Celya'):
                     response_parts['text'] = response_parts['text'].replace('Hai! Saya Celya.', '').strip()
 
-            # Add follow-up question if not present
+
             if not any(phrase in response_parts['text'].lower() for phrase in ['ada yang ingin', 'mau tahu', 'ada lagi']):
                 follow_up = self._get_friendly_response('follow_up')
                 response_parts['text'] += f" {follow_up}"

@@ -9,7 +9,6 @@ from analytics.models import CustomEvent, ComplianceLog
 from django.utils import timezone
 import uuid
 
-# Unregister default admin
 admin.site.unregister(User)
 admin.site.unregister(Group)
 
@@ -19,14 +18,14 @@ class UserEventTracker:
         ComplianceLog.objects.create(
             timestamp=timezone.now(),
             user_id=admin_user.id,
-            ip_address='127.0.0.1',  # Ideally should get from request
+            ip_address='127.0.0.1',  
             action_type=action,
             data_category='user_data',
             data_description=f"User: {affected_user.username} - Action: {action}",
-            affected_users=[affected_user.id],  # Track affected user
+            affected_users=[affected_user.id],  
             legal_basis='legitimate_interest',
             data_retention=timezone.now() + timezone.timedelta(days=365),
-            sensitivity_level='high',  # User data is typically sensitive
+            sensitivity_level='high',  
             request_id=str(uuid.uuid4()),
             source_system='admin_interface',
             authorized_by=admin_user.username,
@@ -41,7 +40,7 @@ class UserEventTracker:
 @admin.register(User)
 class UserAdmin(BaseUserAdmin, ModelAdmin):
     def save_model(self, request, obj, form, change):
-        # Track user data changes
+
         is_password_change = 'password' in form.changed_data
         is_permission_change = any(field in form.changed_data 
                                  for field in ['is_staff', 'is_superuser', 'groups', 'user_permissions'])
@@ -212,14 +211,14 @@ class DestinationEventTracker:
         ComplianceLog.objects.create(
             timestamp=timezone.now(),
             user_id=user.id if user else None,
-            ip_address='127.0.0.1',  # You might want to get actual IP from request
+            ip_address='127.0.0.1',  
             action_type=action,
             data_category='destination',
             data_description=f"Destination: {destination.title if destination else 'Multiple'} - Action: {action}",
-            affected_users=None,  # Add if relevant
-            legal_basis='legitimate_interest',  # Adjust based on your needs
-            data_retention=timezone.now() + timezone.timedelta(days=365),  # Adjust retention period
-            sensitivity_level='low',  # Adjust based on data sensitivity
+            affected_users=None,  
+            legal_basis='legitimate_interest',  
+            data_retention=timezone.now() + timezone.timedelta(days=365), 
+            sensitivity_level='low', 
             request_id=str(uuid.uuid4()),
             source_system='admin_interface',
             authorized_by=user.username if user else None,
@@ -428,14 +427,14 @@ class UserEventTracker:
         ComplianceLog.objects.create(
             timestamp=timezone.now(),
             user_id=admin_user.id,
-            ip_address='127.0.0.1',  # Ideally should get from request
+            ip_address='127.0.0.1', 
             action_type=action,
             data_category='user_data',
             data_description=f"User: {affected_user.username} - Action: {action}",
-            affected_users=[affected_user.id],  # Track affected user
+            affected_users=[affected_user.id],  
             legal_basis='legitimate_interest',
             data_retention=timezone.now() + timezone.timedelta(days=365),
-            sensitivity_level='high',  # User data is typically sensitive
+            sensitivity_level='high', 
             request_id=str(uuid.uuid4()),
             source_system='admin_interface',
             authorized_by=admin_user.username,
@@ -535,10 +534,10 @@ class GroupEventTracker:
             action_type=action,
             data_category='group_permissions',
             data_description=f"Group: {group.name} - Action: {action}",
-            affected_users=[user.id for user in group.user_set.all()],  # Track all users in group
+            affected_users=[user.id for user in group.user_set.all()], 
             legal_basis='legitimate_interest',
             data_retention=timezone.now() + timezone.timedelta(days=365),
-            sensitivity_level='high',  # Group permissions are sensitive
+            sensitivity_level='high',  
             request_id=str(uuid.uuid4()),
             source_system='admin_interface',
             authorized_by=admin_user.username,

@@ -28,6 +28,7 @@ router.register(r'guides-images', ImageGuidesViewset, basename='guides-images')
 router.register(r'fauna', FaunaViewset, basename='fauna')
 router.register(r'fauna-images', ImageFaunaViewset, basename='fauna-images')
 
+# Latest Content
 urlpatterns = [
     path('', include(router.urls)),
     path('latest-content/', LatestContentView.as_view(), name='latest-content'),

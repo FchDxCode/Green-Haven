@@ -83,26 +83,21 @@ class AIAnalyticsAdmin(ModelAdmin, ImportExportModelAdmin):
     export_form_class = ExportForm
     
     def changelist_view(self, request, extra_context=None):
-        # Get analytics for last 30 days
         thirty_days_ago = timezone.now() - timedelta(days=30)
         
-        # Calculate summary stats
         analytics_qs = AIAnalytics.objects.filter(timestamp__gte=thirty_days_ago)
         total_requests = analytics_qs.count()
         
-        # Calculate success rate
         if total_requests > 0:
             success_count = analytics_qs.filter(success=True).count()
             avg_success_rate = (success_count / total_requests) * 100
         else:
             avg_success_rate = 0
             
-        # Calculate average response time
         avg_response_time = analytics_qs.aggregate(
             avg_time=Avg('response_time')
         )['avg_time'] or 0
         
-        # Daily stats for charts
         daily_stats = (
             analytics_qs
             .annotate(date=TruncDate('timestamp'))
@@ -115,7 +110,6 @@ class AIAnalyticsAdmin(ModelAdmin, ImportExportModelAdmin):
             .order_by('date')
         )
 
-        # Endpoint stats for charts
         endpoint_stats = (
             analytics_qs
             .values('endpoint')
@@ -166,10 +160,8 @@ class AIFeedbackAnalyticsAdmin(ModelAdmin, ImportExportModelAdmin):
         return False
 
     def changelist_view(self, request, extra_context=None):
-        # Get analytics for last 30 days
         thirty_days_ago = timezone.now() - timedelta(days=30)
         
-        # Daily feedback stats
         daily_stats = (
             AIFeedbackAnalytics.objects
             .filter(timestamp__gte=thirty_days_ago)
@@ -183,10 +175,8 @@ class AIFeedbackAnalyticsAdmin(ModelAdmin, ImportExportModelAdmin):
             .order_by('date')
         )
 
-        # Overall stats
         total_feedback = AIFeedbackAnalytics.objects.count()
         
-        # Calculate rates
         if total_feedback > 0:
             positive_rate = round((AIFeedbackAnalytics.objects.filter(rating=2).count() * 100.0 / total_feedback), 2)
             negative_rate = round(100 - positive_rate, 2)

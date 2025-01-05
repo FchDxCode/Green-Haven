@@ -67,7 +67,7 @@ class AIFeedbackAnalytics(models.Model):
         (1, '👎 Tidak Membantu'),
         (2, '👍 Membantu')
     ])
-    has_comment = models.BooleanField(default=False)  # Track if user left a comment
+    has_comment = models.BooleanField(default=False) 
     response_time = models.FloatField(help_text='Response time in seconds')
     ip_address = models.GenericIPAddressField(null=True, blank=True)
     user_agent = models.TextField(null=True, blank=True)

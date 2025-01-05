@@ -140,7 +140,7 @@ class RequestLogAdmin(ModelAdmin, ImportExportModelAdmin):
     def engagement_status(self, obj):
         if obj.conversion_goal:
             return format_html('<span style="color: green;">🎯 {}</span>', obj.conversion_goal)
-        if obj.engagement_time and obj.engagement_time > 10000:  # > 10 seconds
+        if obj.engagement_time and obj.engagement_time > 10000:  
             return format_html('<span style="color: blue;">👥 Engaged</span>')
         return format_html('<span style="color: gray;">👀 Viewed</span>')
     engagement_status.short_description = 'Engagement'
@@ -182,7 +182,6 @@ class RequestLogAdmin(ModelAdmin, ImportExportModelAdmin):
         end_date = timezone.now()
         start_date = end_date - timedelta(days=7)
         
-        # Calculate error rate
         total_requests = RequestLog.objects.filter(timestamp__gte=start_date).count()
         error_requests = RequestLog.objects.filter(
             timestamp__gte=start_date,
@@ -191,7 +190,6 @@ class RequestLogAdmin(ModelAdmin, ImportExportModelAdmin):
         
         error_rate = (error_requests / total_requests * 100) if total_requests > 0 else 0
 
-        # Statistik dasar
         daily_stats = (
             RequestLog.objects.filter(timestamp__gte=start_date)
             .annotate(day=TruncDay('timestamp'))
@@ -634,7 +632,6 @@ class ComplianceLogAdmin(ModelAdmin, ImportExportModelAdmin):
     retention_status.short_description = 'Retention'
 
     def changelist_view(self, request, extra_context=None):
-        # Get data untuk charts
         end_date = timezone.now()
         start_date = end_date - timedelta(days=30)
         
@@ -646,7 +643,7 @@ class ComplianceLogAdmin(ModelAdmin, ImportExportModelAdmin):
             .order_by('-count')
         )
         
-        # Sensitivity level distribution dengan filter untuk high dan critical
+        # Sensitivity level distribution dengan filter buat high dan critical
         high_risk_count = (
             ComplianceLog.objects
             .filter(
@@ -681,7 +678,7 @@ class ComplianceLogAdmin(ModelAdmin, ImportExportModelAdmin):
             .order_by('-count')
         )
         
-        # Prepare data for JSON
+        # Prepare data buat JSON
         access_stats_json = {
             'labels': [stat['action_type'] for stat in access_stats],
             'data': [stat['count'] for stat in access_stats]

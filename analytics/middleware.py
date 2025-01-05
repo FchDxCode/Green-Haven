@@ -18,7 +18,7 @@ class AnalyticsMiddleware:
         self.get_response = get_response
         self.RATE_LIMIT = 100
         self.RATE_WINDOW = 3600
-        # Patterns untuk mendeteksi aktivitas mencurigakan
+        # Patterns untuk mendeteksi aktivitas sus
         self.SUSPICIOUS_PATTERNS = [
             r"(?i)(union|select|insert|delete|drop|update|;|\-\-)",  # SQL Injection
             r"(?i)<script.*?>",  # XSS
@@ -53,7 +53,7 @@ class AnalyticsMiddleware:
         api_key = None
         auth_method = None
 
-        # Check API key in headers
+        # Check API key 
         api_key = request.META.get('HTTP_X_API_KEY')
         if api_key:
             auth_method = 'api_key'
@@ -78,14 +78,12 @@ class AnalyticsMiddleware:
         now = timezone.now()
         window_start = now - timedelta(seconds=self.RATE_WINDOW)
         
-        # Get current count from cache
         cache_key = f"cache_{key}"
         count = cache.get(cache_key, 0)
         
         if count >= self.RATE_LIMIT:
             return True, count
         
-        # Increment counter
         cache.set(cache_key, count + 1, self.RATE_WINDOW)
         return False, count + 1
 
@@ -101,8 +99,7 @@ class AnalyticsMiddleware:
         """Determine user type"""
         if not hasattr(request, 'user') or not request.user.is_authenticated:
             return 'guest'
-        # Anda bisa menambahkan logika custom di sini
-        # Contoh: if request.user.is_premium: return 'premium'
+        # Logika Comingsoon nanti tunggu uppdate
         return 'registered'
 
     def get_feature_info(self, request):
@@ -132,8 +129,7 @@ class AnalyticsMiddleware:
 
     def detect_conversion(self, request, response):
         """Detect if a conversion goal was achieved"""
-        # Contoh logika konversi sederhana
-        if response.status_code == 201:  # Created
+        if response.status_code == 201:  
             return 'content_created'
         if 'download' in request.path:
             return 'content_downloaded'
@@ -148,7 +144,7 @@ class AnalyticsMiddleware:
         
         # Catat penggunaan memori awal
         process = psutil.Process()
-        memory_start = process.memory_info().rss / 1024 / 1024  # Convert to MB
+        memory_start = process.memory_info().rss / 1024 / 1024  # Convert ke MB
         
         # Security checks
         is_suspicious, suspicious_reason = self.is_suspicious_request(request)
@@ -188,7 +184,7 @@ class AnalyticsMiddleware:
             conversion_goal = self.detect_conversion(request, response)
             
             # Calculate engagement time
-            engagement_time = int((time.time() - start_time) * 1000)  # in milliseconds
+            engagement_time = int((time.time() - start_time) * 1000)  # ke milliseconds
 
             # Jika ada error dari response
             if is_error:
